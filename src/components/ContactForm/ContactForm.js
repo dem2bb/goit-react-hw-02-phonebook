@@ -1,13 +1,9 @@
 import React, { Component } from 'react';
 import { form, button, form_input } from './ContactForm.module.css';
-import PropTypes from 'prop-types';
-import { v4 as uuidv4 } from 'uuid';
+import { connect } from 'react-redux';
+import phonebookActions from '../../redux/phonebook/phonebook-actions';
 
 class ContactForm extends Component {
-  static propTypes = {
-    onSubmit: PropTypes.func.isRequired,
-  };
-
   state = {
     name: '',
     number: '',
@@ -21,11 +17,14 @@ class ContactForm extends Component {
 
   onHandleSubmit = e => {
     e.preventDefault();
-    this.props.onSubmit({
-      id: uuidv4(),
-      name: this.state.name,
-      number: this.state.number,
+    const found = this.props.contacts.find(item => {
+      return item.name === this.state.name || item.number === this.state.number;
     });
+    if (found) {
+      alert('Такой контакт уже есть!');
+      return;
+    }
+    this.props.onSubmit(this.state);
     this.setState({
       name: '',
       number: '',
@@ -59,4 +58,12 @@ class ContactForm extends Component {
   }
 }
 
-export default ContactForm;
+const mapDispatchToProps = dispatch => ({
+  onSubmit: text => dispatch(phonebookActions.addContact(text)),
+});
+
+const mapStateToProps = state => ({
+  contacts: state.contacts.items,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ContactForm);

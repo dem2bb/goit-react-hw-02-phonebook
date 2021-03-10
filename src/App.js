@@ -1,77 +1,21 @@
 import React, { Component } from 'react';
-
+import { connect } from 'react-redux';
 import ContactsItem from './components/ContactsItem/ContactsItem';
 import Filter from './components/Filter/Filter';
 import ContactForm from './components/ContactForm/ContactForm';
 
 class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
-
-  addContact = contact => {
-    const found = this.state.contacts.find(item => {
-      return item.name === contact.name || item.number === contact.number;
-    });
-    if (found) {
-      alert('Такой контакт уже есть!');
-      return;
-    }
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, contact],
-    }));
-  };
-
-  changeFilter = e => {
-    this.setState({ filter: e.target.value });
-  };
-
-  getFilteredContacts = () => {
-    const { filter, contacts } = this.state;
-    const normalizedFilter = filter.toLowerCase();
-    return contacts.filter(item =>
-      item.name.toLowerCase().includes(normalizedFilter),
-    );
-  };
-
-  handleDelete = id => {
-    this.setState(prevState => {
-      const index = prevState.contacts.findIndex(item => item.id === id);
-      const contacts = [
-        ...prevState.contacts.slice(0, index),
-        ...prevState.contacts.slice(index + 1),
-      ];
-      return { contacts };
-    });
-  };
-
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(contacts);
-    if (parsedContacts) this.setState({ contacts: parsedContacts });
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
-
   render() {
     return (
       <div className="container">
         <h2>Phonebook</h2>
-        <ContactForm onSubmit={this.addContact} />
-        {this.state.contacts.length > 0 && (
+        <ContactForm />
+        {this.props.contacts.length > 0 && (
           <>
             <h2>Contacts</h2>
-            <Filter value={this.state.filter} onChange={this.changeFilter} />
+            <Filter />
             <ul className="contacts">
-              <ContactsItem
-                filtered={this.getFilteredContacts()}
-                onDelete={this.handleDelete}
-              />
+              <ContactsItem filtered={this.props.contacts} />
             </ul>
           </>
         )}
@@ -80,4 +24,19 @@ class App extends Component {
   }
 }
 
-export default App;
+const getFilteredContacts = (allContacts, filter) => {
+  const normalizedFilter = filter.toLowerCase();
+  return allContacts.filter(item =>
+    item.name.toLowerCase().includes(normalizedFilter),
+  );
+};
+
+const mapStateToProps = state => {
+  const { filter, items } = state.contacts;
+  const visibleContacts = getFilteredContacts(items, filter);
+  return {
+    contacts: visibleContacts,
+  };
+};
+
+export default connect(mapStateToProps)(App);

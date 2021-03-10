@@ -1,6 +1,7 @@
 import React from 'react';
 import { delete_button } from './ContactsItem.module.css';
-import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import phonebookActions from '../../redux/phonebook/phonebook-actions';
 
 const ContactsItem = ({ filtered, onDelete }) => {
   return filtered.map(({ name, number, id }) => {
@@ -19,9 +20,8 @@ const ContactsItem = ({ filtered, onDelete }) => {
   });
 };
 
-ContactsItem.propTypes = {
-  filtered: PropTypes.array.isRequired,
-  onDelete: PropTypes.func.isRequired,
-};
+const mapDispatchToProps = dispatch => ({
+  onDelete: id => dispatch(phonebookActions.deleteContact(id)),
+});
 
-export default ContactsItem;
+export default connect(null, mapDispatchToProps)(ContactsItem);
